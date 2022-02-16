@@ -15,6 +15,7 @@ def test_init_class():
 
 def test_get_geocoding_by_country():
     process = Metadata()
+    process._read_yaml_file()
     process._get_geocoding_by_country()
 
 
@@ -22,4 +23,5 @@ def test_get_date_window():
     process = test_init_class()
     process._read_yaml_file()
     process._get_date_window()
-    process._call_api()
+    process._get_geocoding_by_country()
+    process._get_response_data()
