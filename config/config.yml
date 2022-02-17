@@ -9,12 +9,12 @@ unit: metric
 api: a90258c97e50044075e289056fe1b24f
 locations:
   - Tierra blanca Veracruz
-#  - Guadalajara Jalisco
-#  - Houston Texas
-#  - Monterrey Nuevo Leon
-#  - Las Vegas
-#  - New York
-#  - Boston
-#  - Kansas City
-#  - Phoenix
-#  - Seattle
+  - Guadalajara Jalisco
+  - Houston Texas
+  - Monterrey Nuevo Leon
+  - Las Vegas
+  - New York
+  - Boston
+  - Kansas City
+  - Phoenix
+  - Seattle

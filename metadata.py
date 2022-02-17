@@ -27,6 +27,7 @@ class Metadata:
     _locations = None  # type: list
     _row = None  # type: list
     _coon = None
+    _row_df = None  # type: pd.DataFrame
 
     def __init__(self, **kwargs):
         """
@@ -56,7 +57,7 @@ class Metadata:
         """
         date_list = []
         days = self._yaml_config.get('days')
-        for i in range(1, days+1):
+        for i in range(1, days + 1):
             day = (datetime.utcnow() - timedelta(days=i)).timestamp()
             date_list.append(int(day))
 
@@ -125,20 +126,37 @@ class Metadata:
         if row:
             self._row = row
 
-    def _insert_row_data(self) ->None:
-        """"
-        """
-        row = self._get_historical_response_data()
-        for record in row:
-            id = f"{record[-2]}{record[0]}"
-            print(id)
+    def _insert_data(self, df, table) -> None:
+        """"Insert data for table
+        Args:
+            df: dataframe with the data to insert
+            table: table name to insert
 
-    def _get_historical_response_data(self) -> list:
+        Return:
+            None
+        """
+        data = list(set([tuple(x) for x in df.to_numpy()]))
+        tmp = ', '.join("?" * len(df.columns))
+        tmp = tmp.replace('?', '%s')
+        query = f"INSERT INTO {table} VALUES({tmp})"
+        self._execute_query(self._conn, query, data)
+
+    def _process_row_data(self) -> None:
+        """"process to insert the row data
+
+        Returns:
+            None
+        """
+        if not self._row_df.empty:
+            table = "row_data"
+            self._insert_data(self._row_df, table)
+
+    def _get_historical_response_data(self) -> None:
         """"get the historical data from the response and put in a data frame to parser the json and order the columns
         and the convert to a list for future process
 
         Returns:
-            row(list): list of rows
+            None
         """
         df = pd.DataFrame()
         for location in self._row:
@@ -158,11 +176,12 @@ class Metadata:
         row_df = df[['id', 'temp', 'feels_like', 'pressure', 'humidity', 'dew_point', 'uvi', 'clouds', 'visibility',
                      'wind_speed', 'wind_deg', 'wind_gust', 'dt', 'location']]
 
-        row_df.insert(12, 'datatime', pd.to_datetime(row_df['dt'], unit='s'))
+        row_df.insert(12, 'row_date', pd.to_datetime(row_df['dt'], unit='s'))
         row_df.insert(0, 'row_id', row_df['dt'].astype(str) + row_df['id'])
         row_df = row_df.drop(columns=['id', 'dt'])
 
-        return row_df
+        if not row_df.empty:
+            self._row_df = row_df
 
     def _set_query(self) -> None:
         """"Set query value from query.sql file  in the class variable _query.
@@ -217,9 +236,11 @@ class Metadata:
                 if not parameter:
                     cursor.execute(query)
                     conn.commit()
+
                 if isinstance(parameter, list):
-                    ccur.executemany(query, parameter)
+                    cursor.executemany(query, parameter)
                     conn.commit()
+                    logger.info("Query execution succeeded ")
 
             except (Exception, psycopg2.DatabaseError) as error:
                 logger.error(f"Error in execute the query: {error}")
