@@ -151,6 +151,20 @@ class Metadata:
             table = "row_data"
             self._insert_data(self._row_df, table)
 
+    def _process_highest_temperatures(self) -> None:
+        """"Process the row data frame to get the highest temperature by location
+        and insert into the table
+
+        Returns:
+            None
+        """
+        if not self._row_df.empty:
+            table = "highest_temperatures"
+            tmp_df = self._row_df[['row_id', 'temp', 'row_date', 'location']]
+            idx = tmp_df.groupby(['location'])['temp'].transform(max) == tmp_df['temp']
+            highest = tmp_df[idx]
+            self._insert_data(highest, table)
+
     def _get_historical_response_data(self) -> None:
         """"get the historical data from the response and put in a data frame to parser the json and order the columns
         and the convert to a list for future process
