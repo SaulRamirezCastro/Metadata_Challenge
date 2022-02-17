@@ -25,7 +25,7 @@ class Metadata:
 
     _yaml_config = None  # type: dict
     _locations = None  # type: list
-    _row = None        # type: list
+    _row = None  # type: list
     _coon = None
 
     def __init__(self, **kwargs):
@@ -56,7 +56,7 @@ class Metadata:
         """
         date_list = []
         days = self._yaml_config.get('days')
-        for i in range(1, days):
+        for i in range(1, days+1):
             day = (datetime.utcnow() - timedelta(days=i)).timestamp()
             date_list.append(int(day))
 
@@ -92,7 +92,6 @@ class Metadata:
 
             Return
         """
-
         openweather_endpoint = self._yaml_config.get('endpoint')
         unit = self._yaml_config.get('unit')
         api = self._yaml_config.get('api')
@@ -126,19 +125,44 @@ class Metadata:
         if row:
             self._row = row
 
-    def _process_response_data(self) -> None:
+    def _insert_row_data(self) ->None:
         """"
         """
-        dt = pd.DataFrame()
+        row = self._get_historical_response_data()
+        for record in row:
+            id = f"{record[-2]}{record[0]}"
+            print(id)
+
+    def _get_historical_response_data(self) -> list:
+        """"get the historical data from the response and put in a data frame to parser the json and order the columns
+        and the convert to a list for future process
+
+        Returns:
+            row(list): list of rows
+        """
+        df = pd.DataFrame()
         for location in self._row:
+            tmp_id = ""
             for k, v in location.items():
+
+                if k in ['lat', 'lon']:
+                    tmp_id += str(v)
+
                 if k == 'hourly':
                     tmp = pd.json_normalize(v)
-
+                    tmp['id'] = tmp_id
                 if k == 'location':
                     tmp['location'] = v
 
-            dt = pd.concat([dt, tmp])
+            df = pd.concat([df, tmp])
+        row_df = df[['id', 'temp', 'feels_like', 'pressure', 'humidity', 'dew_point', 'uvi', 'clouds', 'visibility',
+                     'wind_speed', 'wind_deg', 'wind_gust', 'dt', 'location']]
+
+        row_df.insert(12, 'datatime', pd.to_datetime(row_df['dt'], unit='s'))
+        row_df.insert(0, 'row_id', row_df['dt'].astype(str) + row_df['id'])
+        row_df = row_df.drop(columns=['id', 'dt'])
+
+        return row_df
 
     def _set_query(self) -> None:
         """"Set query value from query.sql file  in the class variable _query.
@@ -193,12 +217,12 @@ class Metadata:
                 if not parameter:
                     cursor.execute(query)
                     conn.commit()
-                else:
-                    cursor.execute(query, parameter)
+                if isinstance(parameter, list):
+                    ccur.executemany(query, parameter)
                     conn.commit()
 
-            except Exception as e:
-                logger.error(e)
+            except (Exception, psycopg2.DatabaseError) as error:
+                logger.error(f"Error in execute the query: {error}")
 
     def _db_connection(self) -> None:
         """"Get the connection to Postgresql data base
@@ -206,12 +230,11 @@ class Metadata:
         Returns:
             None
         """
-
         try:
-            conn = psycopg2.connect(dbname="metadata",
-                                    user="sramirez",
-                                    password="sramirez1234",
-                                    host="localhost",
+            conn = psycopg2.connect(dbname=self._yaml_config['database'].get('db'),
+                                    user=self._yaml_config['database'].get('user'),
+                                    password=self._yaml_config['database'].get('pass'),
+                                    host=self._yaml_config['database'].get('host'),
                                     port="54320")
 
             if conn:
@@ -220,4 +243,3 @@ class Metadata:
 
         except (Exception, psycopg2.Error) as error:
             logger.error("Error while connecting to PostgresSQL", error)
-

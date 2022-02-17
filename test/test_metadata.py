@@ -25,8 +25,9 @@ def test_get_date_window():
     process._get_date_window()
     process._get_geocoding_by_country()
     process._get_response_data()
-    process._process_response_data()
-#
+    process._process_row_data()
+    # process._get_historical_response_data()
+
 
 
 
@@ -37,6 +38,7 @@ def test_get_date_window():
 #
 # def test_create_table():
 #     process = Metadata()
+#     process._read_yaml_file()
 #     process._db_connection()
 #     process._set_query()
 #     process._create_tables()

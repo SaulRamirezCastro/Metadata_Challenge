@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS row_data (
 	row_id  varchar(100) Not Null,
 	temperature  float Not Null,
 	feels_like float,
+    pressure int,
 	humidity int,
 	dew_point float,
 	uvi int,

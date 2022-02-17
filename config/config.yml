@@ -1,4 +1,9 @@
 endpoint: "https://api.openweathermap.org/data/2.5/onecall/timemachine"
+database:
+  host: localhost
+  user: sramirez
+  pass: sramirez1234
+  db: metadata
 days: 5
 unit: metric
 api: a90258c97e50044075e289056fe1b24f
