@@ -46,13 +46,18 @@ def test_process_highest_temperatures():
     process = test_init_class()
     process._read_yaml_file()
     process._db_connection()
+    process._set_query()
+  #  process._create_tables()
     # process._get_date_window()
     # process._get_geocoding_by_country()
     # process._get_response_data()
     df = test_read_data()
+    df['row_date'] = df['row_date'].astype('datetime64[ns]')
     process._row_df = df
     # process._get_historical_response_data()
+    process._process_row_data()
     process._process_highest_temperatures()
+    process._process_avg_temperatures()
 
 # def test_db_connection():
 #     process = Metadata()

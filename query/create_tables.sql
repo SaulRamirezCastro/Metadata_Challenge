@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS row_data (
-	row_id  varchar(100) Not Null,
+	row_id  varchar(100) Not Null PRIMARY key ,
 	temperature  float Not Null,
 	feels_like float,
     pressure int,
@@ -15,17 +15,17 @@ CREATE TABLE IF NOT EXISTS row_data (
 	location varchar(200) Not Null
 );
 CREATE TABLE IF NOT EXISTS highest_temperatures(
-	row_id varchar(100) Not Null,
+	row_id varchar(100) Not Null PRIMARY KEY ,
 	temperature float Not Null,
 	temperature_date timestamp Not Null,
 	location varchar(200) Not Null
 
 );
 CREATE TABLE IF NOT EXISTS avg_temperatures(
-	row_id varchar(100) Not Null,
-	avg_temperature float,
-	min_temperature float ,
-	max_temperature float ,
-	row_date timestamp,
-	location varchar(200) Not Null
+	row_date date Not Null PRIMARY KEY ,
+	avg_temp float,
+	min_temp float ,
+	max_temp float ,
+	min_location varchar(200) Not Null,
+	max_location varchar(200) Not Null
 )

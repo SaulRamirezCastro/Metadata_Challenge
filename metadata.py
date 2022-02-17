@@ -28,11 +28,30 @@ class Metadata:
     _row = None  # type: list
     _coon = None
     _row_df = None  # type: pd.DataFrame
+    _query = None   # type: list
 
-    def __init__(self, **kwargs):
+    def __init__(self,):
         """
         """
         logger.info("Initialize the class metadata")
+        # self.process_metadata_weather()
+
+    def process_metadata_weather(self) -> None:
+        """"public method to execute all the process
+
+        Returns:
+            None
+        """
+        self._read_yaml_file()
+        self._db_connection()
+        self._create_tables()
+        self._get_date_window()
+        self._get_geocoding_by_country()
+        self._get_response_data()
+        self._get_historical_response_data()
+        self._process_row_data()
+        self._process_highest_temperatures()
+        self._process_avg_temperatures()
 
     def _read_yaml_file(self) -> None:
         """Read the Yaml file configuration and set into the class variable
@@ -118,6 +137,7 @@ class Metadata:
         """
         row = []
         last_5 = self._get_date_window()
+        logger.info(f"Call the Open weather API from the last {self._yaml_config.get('days')} days")
         for city in self._locations:
             for day in last_5:
                 weather = self._call_api(day, city.get('lat'), city.get('long'), city.get('city'))
@@ -148,6 +168,7 @@ class Metadata:
             None
         """
         if not self._row_df.empty:
+            logger.info("Process and insert the row data")
             table = "row_data"
             self._insert_data(self._row_df, table)
 
@@ -159,11 +180,37 @@ class Metadata:
             None
         """
         if not self._row_df.empty:
+            logger.info("Process and insert the highest_temperatures by location ")
             table = "highest_temperatures"
             tmp_df = self._row_df[['row_id', 'temp', 'row_date', 'location']]
             idx = tmp_df.groupby(['location'])['temp'].transform(max) == tmp_df['temp']
             highest = tmp_df[idx]
             self._insert_data(highest, table)
+
+    def _process_avg_temperatures(self) -> None:
+        """"Process and transform to get the avg, max,min temp per day with the locations
+        and insert into the table avg_temperatures
+        Returns: None
+        """
+        if not self._row_df.empty:
+            logger.info("Process and insert the avg_temperatures by day ")
+            table = "avg_temperatures"
+            tmp_df = self._row_df[['temp', 'row_date', 'location']]
+            tmp_df['day'] = tmp_df['row_date'].dt.strftime('%Y/%m/%d')
+
+            idx = tmp_df.groupby(['day'])['temp'].transform(max) == tmp_df['temp']
+            tmp_max = tmp_df[idx]
+            idx = tmp_df.groupby(['day'])['temp'].transform(min) == tmp_df['temp']
+            tmp_min = tmp_df[idx]
+            tmp_avg = tmp_df.groupby(['day'])['temp'].mean()
+            tmp_avg = tmp_avg.reset_index()
+
+            df_avg_tmp = pd.merge(tmp_min, tmp_max, on='day', how='inner', suffixes=('_min', '_max'))
+            df_avg_tmp = pd.merge(df_avg_tmp, tmp_avg, on='day', how='inner')
+            df_avg = df_avg_tmp[['day', 'temp', 'temp_min', 'temp_max',
+                                 'location_min', 'location_max']]
+
+            self._insert_data(df_avg, table)
 
     def _get_historical_response_data(self) -> None:
         """"get the historical data from the response and put in a data frame to parser the json and order the columns
@@ -172,6 +219,7 @@ class Metadata:
         Returns:
             None
         """
+        logger.info("get historical data from the las 5 days")
         df = pd.DataFrame()
         for location in self._row:
             tmp_id = ""
@@ -225,14 +273,9 @@ class Metadata:
         Returns:
             None
         """
-        i = 0
+        logger.info("Creating tables")
         for query in self._query:
             self._execute_query(self._conn, query)
-            if self._conn.notices:
-                logger.info(f"Query Message: {self._conn.notices[i]}")
-                i += 1
-            else:
-                logger.info("Create table Done")
 
     @staticmethod
     def _execute_query(conn, query, parameter=None) -> tuple:
