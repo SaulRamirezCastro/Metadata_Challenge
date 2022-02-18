@@ -34,7 +34,7 @@ class Metadata:
         """
         """
         logger.info("Initialize the class metadata")
-        # self.process_metadata_weather()
+        self.process_metadata_weather()
 
     def process_metadata_weather(self) -> None:
         """"public method to execute all the process
