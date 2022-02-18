@@ -45,6 +45,7 @@ and store in postgresSql as data base.
         """
         self._read_yaml_file()
         self._db_connection()
+        self._set_query()
         self._create_tables()
         self._get_date_window()
         self._get_geocoding_by_country()
@@ -313,8 +314,8 @@ and store in postgresSql as data base.
             conn = psycopg2.connect(dbname=self._yaml_config['database'].get('db'),
                                     user=self._yaml_config['database'].get('user'),
                                     password=self._yaml_config['database'].get('pass'),
-                                    host=self._yaml_config['database'].get('host'),
-                                    port="54320")
+                                    host=self._yaml_config['database'].get('host')
+                                    )
 
             if conn:
                 logger.info("Connected to PostgresSQL")

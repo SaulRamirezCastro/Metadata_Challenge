@@ -1,6 +1,6 @@
 endpoint: "https://api.openweathermap.org/data/2.5/onecall/timemachine"
 database:
-  host: localhost
+  host: postgres-db
   user: sramirez
   pass: sramirez1234
   db: metadata

@@ -1,0 +1,31 @@
+version: '3.9'
+services:
+  metadata-challenge:
+    build: .
+    networks:
+      - metadatanet1
+    depends_on:
+      - postgres-db
+    links:
+      - postgres-db
+
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres
+    hostname: postgres-db
+    env_file:
+      - ./env_config/database.env
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data/
+      - ./services/postgres/:/docker-entrypoint-initdb.d/
+    ports:
+      - 5432:5432
+    networks:
+      - metadatanet1
+
+volumes:
+  postgres_volume:
+
+networks:
+  metadatanet1:
+    driver: bridge
