@@ -20,7 +20,8 @@ logger.setLevel(logging.INFO)
 
 
 class Metadata:
-    """"
+    """"Class Metadata  to get data from openweather by APi
+and store in postgresSql as data base.
     """
 
     _yaml_config = None  # type: dict
@@ -31,7 +32,7 @@ class Metadata:
     _query = None   # type: list
 
     def __init__(self,):
-        """
+        """Init method to execute when the class is Initialize
         """
         logger.info("Initialize the class metadata")
         self.process_metadata_weather()
