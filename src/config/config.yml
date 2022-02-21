@@ -6,7 +6,7 @@ database:
   db: metadata
 days: 5
 unit: metric
-api: a90258c97e50044075e289056fe1b24f
+api: api setrec key
 locations:
   - Tierra blanca Veracruz
   - Guadalajara Jalisco
