@@ -1,5 +1,5 @@
-# Metadata_Challenge
-Repo for Metadata challenge
+Open Weather project
+Repo for Open Weather project
 
 This is a personal project to get data from openweather by APi 
 and store in postgresSql as data base. using from geopy to get the latitude and longitude for locations and 
