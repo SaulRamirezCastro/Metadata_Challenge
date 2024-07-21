@@ -29,7 +29,7 @@ Project Structure:
 ### Source
 - https://openweathermap.org/
   
-### Tecnologies: 
+### Technologies: 
 - ➡️ 🐍 [Python](#-python)
 - ➡️[Docker](#-docker)
 - ➡️ [PostgreSQL](#-postgres)
